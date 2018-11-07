@@ -1,23 +1,35 @@
 from PySide import QtGui, QtCore
 
-from opencmiss.zinchandlers.scenemanipulation import SceneManipulation
+from opencmiss.zinc.context import Context
+
 from mapclientplugins.lungmodelstep.view.ui_lungmodelwidget import Ui_LungModelWidget
 
 
 class LungModelWidget(QtGui.QWidget):
 
-    def __init__(self):
-        super(LungModelWidget, self).__init__()
-        self._ui = None
+    def __init__(self, parent=None):
+        super(LungModelWidget, self).__init__(parent)
+
+        self._context = Context("ZincViewGraphics")
+        self._context.getMaterialmodule().defineStandardMaterials()
+        self._context.getGlyphmodule().defineStandardGlyphs()
+
         self._ui = Ui_LungModelWidget()
+        self._ui.setupUi(self)
 
         self._settings = {'view-parameters': {}}
-
         self._done_callback = None
+
+        self._make_connections()
+
+        self._ui.sceneviewer_widget.get_context(self._context)
+        self._ui.sceneviewer_widget.graphics_initialized.connect(self._graphics_initialized())
 
     def _make_connections(self):
         self._ui.sceneviewer_widget.graphics_initialized.connect(self._graphics_initialized)
         self._ui.done_pushButton.clicked.connect(self._done_clicked)
+        self._ui.leftlung_checkBox.clicked.connect(self._left_lung_clicked)
+        self._ui.rightlung_checkBox.clicked.connect(self._right_lung_clicked)
 
     def _done_clicked(self):
         self._done_callback()
@@ -51,3 +63,10 @@ class LungModelWidget(QtGui.QWidget):
 
     def register_done_callback(self, done_callback):
         self._done_callback = done_callback
+
+    def _left_lung_clicked(self):
+        pass
+
+    def _right_lung_clicked(self):
+        pass
+

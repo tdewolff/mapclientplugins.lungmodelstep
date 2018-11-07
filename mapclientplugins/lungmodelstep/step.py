@@ -10,6 +10,8 @@ from mapclient.mountpoints.workflowstep import WorkflowStepMountPoint
 from mapclientplugins.lungmodelstep.configuredialog import ConfigureDialog
 from mapclientplugins.lungmodelstep.view.lungmodelwidget import LungModelWidget
 
+from mapclientplugins.lungmodelstep.model.pcamodel import PCAModel
+
 
 class LungModelStep(WorkflowStepMountPoint):
     """
@@ -32,7 +34,7 @@ class LungModelStep(WorkflowStepMountPoint):
                       'http://physiomeproject.org/workflow/1.0/rdf-schema#file_location'))
         # Port data:
         self._portData0 = None # mesh
-        self._portData1 = None # pca_model
+        self._pca_model = None # pca_model
         # Config:
         self._config = {}
         self._config['identifier'] = ''
@@ -52,6 +54,9 @@ class LungModelStep(WorkflowStepMountPoint):
                 all_settings = json.loads(f.read())
         except EnvironmentError:
             pass
+
+        average_mesh = PCAModel(self._pca_model)
+        average_mesh._average_lung()
 
         self._view = LungModelWidget()
         if 'view' in all_settings:
@@ -83,7 +88,7 @@ class LungModelStep(WorkflowStepMountPoint):
         :param index: Index of the port to return.
         :param dataIn: The data to set for the port at the given index.
         """
-        self._portData1 = dataIn # pca_model
+        self._pca_model = dataIn # pca_model
 
     def getPortData(self, index):
         """

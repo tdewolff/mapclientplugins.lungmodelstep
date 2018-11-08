@@ -9,6 +9,7 @@ from PySide import QtGui
 from mapclient.mountpoints.workflowstep import WorkflowStepMountPoint
 from mapclientplugins.lungmodelstep.configuredialog import ConfigureDialog
 from mapclientplugins.lungmodelstep.view.lungmodelwidget import LungModelWidget
+from mapclientplugins.lungmodelstep.model.lungmodel import LungModel
 
 from mapclientplugins.lungmodelstep.model.pcamodel import PCAModel
 
@@ -39,6 +40,7 @@ class LungModelStep(WorkflowStepMountPoint):
         self._config = {}
         self._config['identifier'] = ''
         self._view = None
+        self._model = None
 
     def execute(self):
         """
@@ -56,9 +58,10 @@ class LungModelStep(WorkflowStepMountPoint):
             pass
 
         average_mesh = PCAModel(self._pca_model)
-        average_mesh._average_lung()
+        # average_mesh._average_lung()
 
-        self._view = LungModelWidget()
+        self._model = LungModel()
+        self._view = LungModelWidget(self._model)
         if 'view' in all_settings:
             self._view.set_settings(all_settings['view'])
 

@@ -11,7 +11,7 @@ class LungModel(object):
         self._logger = self._context.getLogger()
         self._initialize()
         self._left_region = self.set_region('leftregion')
-        self._right_region = self.set_region('rightlung')
+        self._right_region = self.set_region('rightregion')
 
         self._meshmodel = MeshModel(self._left_region, self._right_region, self._materialmodule)
 

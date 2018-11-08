@@ -208,7 +208,7 @@ class Ui_LungModelWidget(object):
         self.horizontalLayout_2.addItem(spacerItem1)
         self.verticalLayout.addWidget(self.frame)
         self.horizontalLayout.addWidget(self.controlPanel_groupBox)
-        self.sceneviewer_widget = BaseSceneviewerWidget(LungModelWidget)
+        self.sceneviewer_widget = SceneviewerWidget(LungModelWidget)
         sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Preferred, QtGui.QSizePolicy.Preferred)
         sizePolicy.setHorizontalStretch(1)
         sizePolicy.setVerticalStretch(0)
@@ -238,4 +238,4 @@ class Ui_LungModelWidget(object):
         self.breating.setText(QtGui.QApplication.translate("LungModelWidget", "Breathing", None, QtGui.QApplication.UnicodeUTF8))
         self.done_pushButton.setText(QtGui.QApplication.translate("LungModelWidget", "Exit", None, QtGui.QApplication.UnicodeUTF8))
 
-from opencmiss.zincwidgets.basesceneviewerwidget import BaseSceneviewerWidget
+from opencmiss.zincwidgets.sceneviewerwidget import SceneviewerWidget

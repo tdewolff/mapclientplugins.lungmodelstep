@@ -5,13 +5,13 @@ from opencmiss.zinc.graphics import Graphics
 
 class MeshModel(object):
 
-    def __init__(self, region1, region2, materialModule):
+    def __init__(self, leftregion, rightregion, materialModule):
         self._path = self.getPluginPath()
 
-        self._leftRegionName = region1.getName()
-        self._rightRegionName = region2.getName()
-        self._leftRegion = region1
-        self._rightRegion = region2
+        self._leftRegionName = leftregion.getName()
+        self._rightRegionName = rightregion.getName()
+        self._leftRegion = leftregion
+        self._rightRegion = rightregion
         self._initializeLeftLung()
         self._initializeRightLung()
 
@@ -57,9 +57,9 @@ class MeshModel(object):
 
         self.__setupScene(self._leftRegion, self._rightRegion)
 
-    def __setupScene(self, region1, region2):
+    def __setupScene(self, leftregion, rightregion):
         # left lung
-        leftScene = self.getScene(region1)
+        leftScene = self.getScene(leftregion)
         leftScene.beginChange()
         leftMaterialModule = self._materialModule
         leftLines = leftScene.createGraphicsLines()
@@ -76,7 +76,7 @@ class MeshModel(object):
         leftSurfaces.setVisibilityFlag(self.isDisplaySurfaces('displaySurfacesLeft'))
 
         # right lung
-        rightScene = self.getScene(region2)
+        rightScene = self.getScene(rightregion)
         rightScene.beginChange()
         rightMaterialModule = self._materialModule
         rightLines = rightScene.createGraphicsLines()

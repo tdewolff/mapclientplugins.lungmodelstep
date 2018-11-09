@@ -6,6 +6,10 @@ import json
 import os
 from PySide import QtGui
 
+import warnings
+warnings.filterwarnings("ignore", message="numpy.dtype size changed")
+warnings.filterwarnings("ignore", message="numpy.ufunc size changed")
+
 from mapclient.mountpoints.workflowstep import WorkflowStepMountPoint
 from mapclientplugins.lungmodelstep.configuredialog import ConfigureDialog
 from mapclientplugins.lungmodelstep.view.lungmodelwidget import LungModelWidget
@@ -37,8 +41,7 @@ class LungModelStep(WorkflowStepMountPoint):
         self._portData0 = None # mesh
         self._pca_model = None # pca_model
         # Config:
-        self._config = {}
-        self._config['identifier'] = ''
+        self._config = {'identifier': ''}
         self._view = None
         self._model = None
 
@@ -63,15 +66,13 @@ class LungModelStep(WorkflowStepMountPoint):
         self._model = LungModel()
         self._view = LungModelWidget(self._model)
         if 'view' in all_settings:
-            self._view.set_settings(all_settings['view'])
+            self._view.setSettings(all_settings['view'])
 
-        self._view.register_done_callback(self._interactionDone)
+        self._view.registerDoneCallback(self._interactionDone)
         self._setCurrentWidget(self._view)
 
-        print("Executing...")
-
     def _interactionDone(self):
-        all_settings = {'view': self._view.get_settings()}
+        all_settings = {'view': self._view.getSettings()}
         settings_in_string_form = json.dumps(all_settings, default=lambda o: o.__dict__, sort_keys=True, indent=4)
         with open(self._get_settings_file_name(), 'w') as f:
             f.write(settings_in_string_form)

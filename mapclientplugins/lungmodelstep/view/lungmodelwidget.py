@@ -5,7 +5,7 @@ from mapclientplugins.lungmodelstep.view.ui_lungmodelwidget import Ui_LungModelW
 
 class LungModelWidget(QtGui.QWidget):
 
-    def __init__(self, model, parent=None):
+    def __init__(self, model, pcaModel, parent=None):
         super(LungModelWidget, self).__init__(parent)
         self._model = model
         self._meshModel = model.getMeshModel()

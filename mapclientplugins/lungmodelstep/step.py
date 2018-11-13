@@ -60,11 +60,9 @@ class LungModelStep(WorkflowStepMountPoint):
         except EnvironmentError:
             pass
 
-        average_mesh = PCAModel(self._pca_model)
-        # average_mesh._average_lung()
-
+        pcaModel = PCAModel(self._pcaModel)
         self._model = LungModel()
-        self._view = LungModelWidget(self._model)
+        self._view = LungModelWidget(self._model, pcaModel)
         if 'view' in all_settings:
             self._view.setSettings(all_settings['view'])
 
@@ -92,7 +90,7 @@ class LungModelStep(WorkflowStepMountPoint):
         :param index: Index of the port to return.
         :param dataIn: The data to set for the port at the given index.
         """
-        self._pca_model = dataIn # pca_model
+        self._pcaModel = dataIn # pca_model
 
     def getPortData(self, index):
         """

@@ -53,6 +53,3 @@ class PCAModel(object):
 
     def _getRightNodeIndex(self):
         return self._nodes.setNode(lung='right')
-
-
-

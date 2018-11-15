@@ -22,9 +22,12 @@ class MeshModel(object):
         self._initializeLeftLung()
         self._initializeRightLung()
 
+        self._leftMesh = None
+        self._rightMesh = None
+
         self._materialModule = materialModule
 
-        self._settings = {'displaySurfacesLeft': True, 'displaySurfacesRight': True, 'Breathing': False}
+        self._settings = {'displaySurfacesLeft': True, 'displaySurfacesRight': True}
         self._generateMesh()
 
         self._nodes = LungNodes()
@@ -34,15 +37,15 @@ class MeshModel(object):
 
     def _setVisibility(self, graphicsName, show):
         self._settings[graphicsName] = show
-        if graphicsName == 'displaySurfacesLeft':
+        if 'Left' in graphicsName:
             graphics = self._leftRegion.getScene().findGraphicsByName(graphicsName)
             graphics.setVisibilityFlag(show)
-        elif graphicsName == 'displaySurfacesRight':
+        if 'Right' in graphicsName:
             graphics = self._rightRegion.getScene().findGraphicsByName(graphicsName)
             graphics.setVisibilityFlag(show)
 
     def _generateMesh(self):
-        # left lung
+        # Left Lung:
         self._leftScene = self._leftRegion.getScene()
         fmLeft = self._leftRegion.getFieldmodule()
         fmLeft.beginChange()
@@ -50,6 +53,20 @@ class MeshModel(object):
         self._leftMagnitude = fmLeft.createFieldMagnitude(self._leftCoordinates)
         self._leftMagnitude.setName('leftmag')
         self._leftMagnitude.setManaged(True)
+
+        """ Upper lobe group """
+        upperLobeElems = (63, 64, 69, 70, 75, 76, 80, 81, 85, 86, 87, 89, 90, 91, 93, 94, 96, 97, 98, 99, 101, 106)
+        leftMesh = fmLeft.findMeshByDimension(2)
+        upperLeftGroup = self._createFieldGroup(fmLeft, 'upperLeft')
+        upperLeftElems = self._createElementGroup(upperLeftGroup, leftMesh)
+        upperMeshGroup = upperLeftElems.getMeshGroup()
+        self._addSubElements(upperLeftGroup)
+        el_iter = leftMesh.createElementiterator()
+        element = el_iter.next()
+        while element.isValid():
+            if element.getIdentifier() in upperLobeElems:
+                upperMeshGroup.addElement(element)
+            element = el_iter.next()
         fmLeft.endChange()
 
         # right lung
@@ -64,6 +81,19 @@ class MeshModel(object):
 
         self.__setupScene(self._leftRegion, self._rightRegion)
 
+    def _creteLobeGroup(self, fm):
+        leftMesh = fmLeft.findMeshByDimension(2)
+        upperLeftGroup = self._createFieldGroup(fmLeft, 'upperLeft')
+        upperLeftElems = self._createElementGroup(upperLeftGroup, leftMesh)
+        upperMeshGroup = upperLeftElems.getMeshGroup()
+        self._addSubElements(upperLeftGroup)
+        el_iter = leftMesh.createElementiterator()
+        element = el_iter.next()
+        while element.isValid():
+            if element.getIdentifier() in upperLobeElems:
+                upperMeshGroup.addElement(element)
+            element = el_iter.next()
+
     def __setupScene(self, leftregion, rightregion):
         # left lung
         leftScene = self.getScene(leftregion)
@@ -71,6 +101,7 @@ class MeshModel(object):
         leftMaterialModule = self._materialModule
         leftLines = leftScene.createGraphicsLines()
         leftLines.setCoordinateField(self._leftCoordinates)
+        leftLines.setName('displayLinesLeft')
         black = leftMaterialModule.findMaterialByName('white')
         leftLines.setMaterial(black)
 
@@ -88,6 +119,7 @@ class MeshModel(object):
         rightMaterialModule = self._materialModule
         rightLines = rightScene.createGraphicsLines()
         rightLines.setCoordinateField(self._rightCoordinates)
+        rightLines.setName('displayLinesRight')
         black = rightMaterialModule.findMaterialByName('white')
         rightLines.setMaterial(black)
 
@@ -113,6 +145,36 @@ class MeshModel(object):
         self._rightRegion.readFile(os.path.join('/', self._path, 'fields', nodefile))
         self._rightRegion.readFile(os.path.join('/', self._path, 'fields', elemfile))
 
+    def _createFieldGroup(self, fm, name):
+        field = fm.findFieldByName(name)
+        if field.isValid():
+            group = field.castGroup()
+            assert group.isValid(), 'Existing non-group field called ' + name
+        else:
+            group = fm.createFieldGroup()
+            group.setName(name)
+            group.setManaged(True)
+        return group
+
+    def _createElementGroup(self, grp, mesh):
+        elementGroup = grp.getFieldElementGroup(mesh)
+        if not elementGroup.isValid():
+            elementGroup = grp.createFieldElementGroup(mesh)
+        return elementGroup
+
+    def _addSubElements(self, grp):
+        from opencmiss.zinc.field import FieldGroup
+
+        grp.setSubelementHandlingMode(FieldGroup.SUBELEMENT_HANDLING_MODE_FULL)
+        fm = grp.getFieldmodule()
+        for dimension in range(1, 3):
+            mesh = fm.findMeshByDimension(dimension)
+            elementGroup = grp.getFieldElementGroup(mesh)
+            if elementGroup.isValid():
+                meshGroup = elementGroup.getMeshGroup()
+                meshGroup.addElementsConditional(elementGroup)
+        return None
+
     @staticmethod
     def getScene(region):
         return region.getScene()
@@ -131,7 +193,8 @@ class MeshModel(object):
         self._setNodeParameter(nodeArray, lung=lung)
 
     def _setNodeParameter(self, nodeArray, lung):
-        fieldmodule = self._leftRegion.getFieldmodule() if lung == 'left' else self._rightRegion.getFieldmodule() if 'right' == lung else Exception("Region invalid!")
+        fieldmodule = self._leftRegion.getFieldmodule() if lung == 'left' else self._rightRegion.getFieldmodule() if 'right' == lung else Exception(
+            "Region invalid!")
         if lung == 'left' and nodeArray.shape[0] != 99:
             raise Exception("Lung and node array do not match!")
         elif lung == 'right' and nodeArray.shape[0] != 126:
@@ -203,6 +266,10 @@ class MeshModel(object):
                     break
 
         fieldmodule.endChange()
+        del fieldmodule;
+        del cache;
+        del node;
+        del coordinates
         return None
 
     def _getLeftNodeField(self):

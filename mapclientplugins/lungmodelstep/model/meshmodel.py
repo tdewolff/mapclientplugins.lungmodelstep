@@ -25,9 +25,17 @@ class MeshModel(object):
         self._leftMesh = None
         self._rightMesh = None
 
+        self._elemGroups = {'leftUpperLobe': (63, 64, 69, 70, 75, 76, 80, 81, 85, 86, 87, 89, 90, 91, 93, 94, 96, 97, 98, 99, 101, 106),
+                            'leftLowerLobe': (65, 66, 67, 71, 72, 73, 77, 78, 82, 83, 102, 103, 104, 107, 108, 109),
+                            'rightUpperLobe': (23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38),
+                            'rightMiddleLobe': (1, 2, 7, 8, 13, 14, 18, 19, 39, 40, 45, 46),
+                            'rightLowerLobe': (3, 4, 5, 6, 9, 10, 11, 12, 15, 16, 17, 20, 21, 22, 41, 42, 43, 44, 47, 48, 49, 50)}
+
         self._materialModule = materialModule
 
-        self._settings = {'displaySurfacesLeft': True, 'displaySurfacesRight': True}
+        # self._settings = {'displaySurfacesLeft': True, 'displaySurfacesRight': True}
+        self._settings = {'leftUpperLobe': True, 'leftLowerLobe': True, 'rightUpperLobe': True, 'rightMiddleLobe': True,
+                          'rightLowerLobe': True, 'displaySurfacesLeft': True, 'displaySurfacesRight': True}
         self._generateMesh()
 
         self._nodes = LungNodes()
@@ -44,95 +52,6 @@ class MeshModel(object):
             graphics = self._rightRegion.getScene().findGraphicsByName(graphicsName)
             graphics.setVisibilityFlag(show)
 
-    def _generateMesh(self):
-        # Left Lung:
-        self._leftScene = self._leftRegion.getScene()
-        fmLeft = self._leftRegion.getFieldmodule()
-        fmLeft.beginChange()
-        self._leftCoordinates = fmLeft.findFieldByName('coordinates')
-        self._leftMagnitude = fmLeft.createFieldMagnitude(self._leftCoordinates)
-        self._leftMagnitude.setName('leftmag')
-        self._leftMagnitude.setManaged(True)
-
-        """ Upper lobe group """
-        upperLobeElems = (63, 64, 69, 70, 75, 76, 80, 81, 85, 86, 87, 89, 90, 91, 93, 94, 96, 97, 98, 99, 101, 106)
-        leftMesh = fmLeft.findMeshByDimension(2)
-        upperLeftGroup = self._createFieldGroup(fmLeft, 'upperLeft')
-        upperLeftElems = self._createElementGroup(upperLeftGroup, leftMesh)
-        upperMeshGroup = upperLeftElems.getMeshGroup()
-        self._addSubElements(upperLeftGroup)
-        el_iter = leftMesh.createElementiterator()
-        element = el_iter.next()
-        while element.isValid():
-            if element.getIdentifier() in upperLobeElems:
-                upperMeshGroup.addElement(element)
-            element = el_iter.next()
-        fmLeft.endChange()
-
-        # right lung
-        self._rightScene = self._rightRegion.getScene()
-        fmRight = self._rightRegion.getFieldmodule()
-        fmRight.beginChange()
-        self._rightCoordinates = fmRight.findFieldByName('coordinates')
-        self._rightMagnitude = fmRight.createFieldMagnitude(self._rightCoordinates)
-        self._rightMagnitude.setName('rightmag')
-        self._rightMagnitude.setManaged(True)
-        fmRight.endChange()
-
-        self.__setupScene(self._leftRegion, self._rightRegion)
-
-    def _creteLobeGroup(self, fm):
-        leftMesh = fmLeft.findMeshByDimension(2)
-        upperLeftGroup = self._createFieldGroup(fmLeft, 'upperLeft')
-        upperLeftElems = self._createElementGroup(upperLeftGroup, leftMesh)
-        upperMeshGroup = upperLeftElems.getMeshGroup()
-        self._addSubElements(upperLeftGroup)
-        el_iter = leftMesh.createElementiterator()
-        element = el_iter.next()
-        while element.isValid():
-            if element.getIdentifier() in upperLobeElems:
-                upperMeshGroup.addElement(element)
-            element = el_iter.next()
-
-    def __setupScene(self, leftregion, rightregion):
-        # left lung
-        leftScene = self.getScene(leftregion)
-        leftScene.beginChange()
-        leftMaterialModule = self._materialModule
-        leftLines = leftScene.createGraphicsLines()
-        leftLines.setCoordinateField(self._leftCoordinates)
-        leftLines.setName('displayLinesLeft')
-        black = leftMaterialModule.findMaterialByName('white')
-        leftLines.setMaterial(black)
-
-        leftSurfaces = leftScene.createGraphicsSurfaces()
-        leftSurfaces.setCoordinateField(self._leftCoordinates)
-        leftSurfaces.setRenderPolygonMode(Graphics.RENDER_POLYGON_MODE_SHADED)
-        surfacesMaterial = self._materialModule.findMaterialByName('tissue')
-        leftSurfaces.setMaterial(surfacesMaterial)
-        leftSurfaces.setName('displaySurfacesLeft')
-        leftSurfaces.setVisibilityFlag(self.isDisplaySurfaces('displaySurfacesLeft'))
-
-        # right lung
-        rightScene = self.getScene(rightregion)
-        rightScene.beginChange()
-        rightMaterialModule = self._materialModule
-        rightLines = rightScene.createGraphicsLines()
-        rightLines.setCoordinateField(self._rightCoordinates)
-        rightLines.setName('displayLinesRight')
-        black = rightMaterialModule.findMaterialByName('white')
-        rightLines.setMaterial(black)
-
-        rightSurfaces = rightScene.createGraphicsSurfaces()
-        rightSurfaces.setCoordinateField(self._rightCoordinates)
-        rightSurfaces.setRenderPolygonMode(Graphics.RENDER_POLYGON_MODE_SHADED)
-        surfacesMaterial = self._materialModule.findMaterialByName('tissue')
-        rightSurfaces.setMaterial(surfacesMaterial)
-        rightSurfaces.setName('displaySurfacesRight')
-        rightSurfaces.setVisibilityFlag(self.isDisplaySurfaces('displaySurfacesRight'))
-
-        rightScene.endChange()
-
     def _initializeLeftLung(self):
         nodefile = r'left_average.exnode'
         elemfile = r'left_average.exelem'
@@ -144,6 +63,50 @@ class MeshModel(object):
         elemfile = r'right_average.exelem'
         self._rightRegion.readFile(os.path.join('/', self._path, 'fields', nodefile))
         self._rightRegion.readFile(os.path.join('/', self._path, 'fields', elemfile))
+
+    def _generateMesh(self):
+        # Left Lung:
+        self._leftScene = self._leftRegion.getScene()
+        fmLeft = self._leftRegion.getFieldmodule()
+        fmLeft.beginChange()
+        self._leftCoordinates = fmLeft.findFieldByName('coordinates')
+        self._leftMagnitude = fmLeft.createFieldMagnitude(self._leftCoordinates)
+        self._leftMagnitude.setName('leftmag')
+        self._leftMagnitude.setManaged(True)
+        """ Create upper and lower lobe groups """
+        self._leftUpperLobe = self._creteLobeGroup(fmLeft, 'leftUpperLobe')
+        self._leftlowerLobe = self._creteLobeGroup(fmLeft, 'leftLowerLobe')
+        fmLeft.endChange()
+
+        # right lung
+        self._rightScene = self._rightRegion.getScene()
+        fmRight = self._rightRegion.getFieldmodule()
+        fmRight.beginChange()
+        self._rightCoordinates = fmRight.findFieldByName('coordinates')
+        self._rightMagnitude = fmRight.createFieldMagnitude(self._rightCoordinates)
+        self._rightMagnitude.setName('rightmag')
+        self._rightMagnitude.setManaged(True)
+        """ Create upper and lower lobe groups """
+        self._rightUpperLobe = self._creteLobeGroup(fmRight, 'rightUpperLobe')
+        self._rightMiddleLobe = self._creteLobeGroup(fmRight, 'rightMiddleLobe')
+        self._rightLowerLobe = self._creteLobeGroup(fmRight, 'rightLowerLobe')
+        fmRight.endChange()
+
+        self.__setupScene(self._leftRegion, self._rightRegion)
+
+    def _creteLobeGroup(self, fm, name):
+        mesh = fm.findMeshByDimension(2)
+        group = self._createFieldGroup(fm, name)
+        elemGroup = self._createElementGroup(group, mesh)
+        meshGroup = elemGroup.getMeshGroup()
+        self._addSubElements(group)
+        el_iter = mesh.createElementiterator()
+        element = el_iter.next()
+        while element.isValid():
+            if element.getIdentifier() in self._elemGroups[name]:
+                meshGroup.addElement(element)
+            element = el_iter.next()
+        return group
 
     def _createFieldGroup(self, fm, name):
         field = fm.findFieldByName(name)
@@ -163,6 +126,11 @@ class MeshModel(object):
         return elementGroup
 
     def _addSubElements(self, grp):
+        """
+
+        :param grp:
+        :return:
+        """
         from opencmiss.zinc.field import FieldGroup
 
         grp.setSubelementHandlingMode(FieldGroup.SUBELEMENT_HANDLING_MODE_FULL)
@@ -175,6 +143,88 @@ class MeshModel(object):
                 meshGroup.addElementsConditional(elementGroup)
         return None
 
+    def __setupScene(self, leftregion, rightregion):
+        """
+
+        :param leftregion:
+        :param rightregion:
+        :return:
+        """
+        """ Left Lung"""
+        leftScene = self._createScene(leftregion)
+        leftScene.beginChange()
+        self._createLineGraphics(leftScene, self._leftCoordinates, 'displayLinesLeft', 'white')
+        self._surfaceLeft = self._createSurfaceGraphics(leftScene, self._leftCoordinates, 'displaySurfacesLeft', 'solidTissue')
+
+        leftScene.endChange()
+
+        """ Right Lung"""
+        rightScene = self._createScene(rightregion)
+        rightScene.beginChange()
+        self._createLineGraphics(rightScene, self._rightCoordinates, 'displayLinesRight', 'white')
+        self._surfaceRight = self._createSurfaceGraphics(rightScene, self._rightCoordinates, 'displaySurfacesRight', 'solidTissue')
+        rightScene.endChange()
+
+    def _createScene(self, region):
+        """
+
+        :param region:
+        :return:
+        """
+        return self.getScene(region)
+
+    def _createLineGraphics(self, scene, coordinates, name, color):
+        """
+
+        :param scene:
+        :param coordinates:
+        :param name:
+        :param color:
+        :return:
+        """
+        leftMaterialModule = self._materialModule
+        leftLines = scene.createGraphicsLines()
+        leftLines.setCoordinateField(coordinates)
+        leftLines.setName(name)
+        black = leftMaterialModule.findMaterialByName(color)
+        leftLines.setMaterial(black)
+
+    def _createSurfaceGraphics(self, scene, coordinates, name, color):
+        """
+
+        :param scene:
+        :param coordinates:
+        :param name:
+        :param color:
+        :return:
+        """
+        surface = scene.createGraphicsSurfaces()
+        surface.setCoordinateField(coordinates)
+        surface.setRenderPolygonMode(Graphics.RENDER_POLYGON_MODE_SHADED)
+        surfacesMaterial = self._materialModule.findMaterialByName(color)
+        surface.setMaterial(surfacesMaterial)
+        surface.setName(name)
+        surface.setVisibilityFlag(self.isDisplaySurfaces(name))
+        return surface
+
+    def setLeftUpperLobeGraphics(self):
+        self._surfaceLeft.setSubgroupField(self._leftlowerLobe)
+
+    def setLeftLowerLobeGraphics(self):
+        self._surfaceLeft.setSubgroupField(self._leftUpperLobe)
+
+    def setRightUpperLobeGraphics(self):
+        self._surfaceRight.setSubgroupField(self._rightMiddleLobe)
+        self._surfaceRight.setSubgroupField(self._rightLowerLobe)
+
+    def setRightMiddleLobeGraphics(self):
+        self._surfaceRight.setSubgroupField(self._rightUpperLobe)
+        self._surfaceRight.setSubgroupField(self._rightLowerLobe)
+
+    def setRighttLowerLobeGraphics(self):
+        self._surfaceRight.setSubgroupField(self._rightUpperLobe)
+        self._surfaceRight.setSubgroupField(self._rightMiddleLobe)
+
     @staticmethod
     def getScene(region):
         return region.getScene()
@@ -186,7 +236,7 @@ class MeshModel(object):
     def isDisplaySurfaces(self, surfaceName):
         return self._getVisibility(surfaceName)
 
-    def setDisplaySurfaces(self, surfaceName, show):
+    def setDisplayObjects(self, surfaceName, show):
         self._setVisibility(surfaceName, show)
 
     def applyMorphing(self, nodeArray, lung=None):

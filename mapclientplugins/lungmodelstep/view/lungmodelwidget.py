@@ -1,5 +1,4 @@
-from PySide import QtGui, QtCore
-import numpy as np
+from PySide import QtGui
 
 from mapclientplugins.lungmodelstep.view.ui_lungmodelwidget import Ui_LungModelWidget
 
@@ -85,27 +84,33 @@ class LungModelWidget(QtGui.QWidget):
         # print num
         # for i in range(0, num):
         #     print self._model._logger.getMessageTextAtIndex(i)
-        self._meshModel.setDisplaySurfaces('displaySurfacesLeft', self._ui.leftlungUpper_checkBox.isChecked())
-        self._meshModel.setDisplaySurfaces('displayLinesLeft', self._ui.leftlungUpper_checkBox.isChecked())
+        checkBox = self._ui.leftlungUpper_checkBox.isChecked()
+        self._meshModel.setDisplayObjects('leftUpperLobe', checkBox)
+        if checkBox is False:
+            self._meshModel.setLeftUpperLobeGraphics()
+        else:
+            self._meshModel.setLeftLowerLobeGraphics()
+        # self._meshModel.setDisplayObjects('displayLinesLeft', self._ui.leftlungUpper_checkBox.isChecked())
 
     def _leftLungLowerClicked(self):
-        self._meshModel.setDisplaySurfaces('displaySurfacesLeft', self._ui.leftlungLower_checkBox.isChecked())
+        self._meshModel.setDisplayObjects('displaySurfacesLeft', self._ui.leftlungLower_checkBox.isChecked())
+        self._meshModel.setLeftLowerLobeGraphics()
 
     def _rightLungUpperClicked(self):
-        self._meshModel.setDisplaySurfaces('displaySurfacesRight', self._ui.rightlungUpper_checkBox.isChecked())
+        self._meshModel.setDisplayObjects('displaySurfacesRight', self._ui.rightlungUpper_checkBox.isChecked())
+        self._meshModel.setRightUpperLobeGraphics()
 
     def _rightLungMiddleClicked(self):
-        self._meshModel.setDisplaySurfaces('displaySurfacesRight', self._ui.rightlungMiddle_checkBox.isChecked())
+        self._meshModel.setDisplayObjects('displaySurfacesRight', self._ui.rightlungMiddle_checkBox.isChecked())
+        self._meshModel.setRightMiddleLobeGraphics()
 
     def _rightLungLowerClicked(self):
-        self._meshModel.setDisplaySurfaces('displaySurfacesRight', self._ui.rightlungLower_checkBox.isChecked())
+        self._meshModel.setDisplayObjects('displaySurfacesRight', self._ui.rightlungLower_checkBox.isChecked())
+        self._meshModel.setRighttLowerLobeGraphics()
 
     def _resetClicked(self):
         self._resetSpinBoxValues()
         self._applyMorphing()
-        # leftNodes, rightNodes = self._getAverageLung()
-        # self._meshModel.applyMorphing(leftNodes, lung='left')
-        # self._meshModel.applyMorphing(rightNodes, lung='right')
 
     def _getAverageLung(self):
         return self._pcaModel.averageLung()

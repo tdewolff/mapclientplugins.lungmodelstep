@@ -1,5 +1,5 @@
 import numpy
-import morphic
+import mapclientplugins.lungmodelstep.morphic
 
 class PCAMesh(object):
 

@@ -6,7 +6,7 @@ import scipy.sparse
 import scipy.sparse.linalg
 from scipy.spatial import cKDTree
 
-from morphic import core
+from mapclientplugins.lungmodelstep.morphic import core
 
 class BoundElementPoint:
     

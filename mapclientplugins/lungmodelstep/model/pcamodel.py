@@ -1,5 +1,5 @@
 import numpy as np
-from morphic.mesher import Mesh
+from mapclientplugins.lungmodelstep.morphic.mesher import Mesh
 from mapclientplugins.lungmodelstep.fields.nodes import Nodes
 from mapclientplugins.lungmodelstep.fields.elements import Elements
 
